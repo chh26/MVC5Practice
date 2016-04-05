@@ -57,8 +57,12 @@ namespace HomeWork1.Controllers
         {
             var data = repo客戶資料.All();
 
+
             if (!string.IsNullOrEmpty(param))
-                data.Where(p => p.客戶分類.ToString() == param);
+            {
+                int intParam = Convert.ToInt32(param);
+                data = data.Where(p => p.客戶分類 == intParam);
+            }
             
             ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別");
             return View("Index", data.ToList());
