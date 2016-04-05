@@ -57,6 +57,13 @@
         <dd>
             @Html.DisplayFor(model => model.Email)
         </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.客戶分類)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.客戶類別.類別)
+        </dd>
 
     </dl>
 </div>
@@ -64,3 +71,12 @@
     @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
     @Html.ActionLink("Back to List", "Index")
 </p>
+<table>
+    <tr>
+        <td>
+            @Html.Partial("CustContactsPartialView", Model.客戶聯絡人.ToList())
+        </td>
+    </tr>
+</table>
+
+

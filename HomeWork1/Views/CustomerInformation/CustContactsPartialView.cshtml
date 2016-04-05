@@ -1,0 +1,66 @@
+﻿@model IEnumerable<HomeWork1.Models.客戶聯絡人>
+
+@{
+    ViewBag.Title = "CustContactsPartialView";
+}
+
+<h4>客戶聯絡人資訊</h4>
+
+@using (Html.BeginForm("Details", "CustomerInformation"))
+{
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.職稱)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.姓名)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Email)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.手機)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.電話)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.客戶資料.客戶名稱)
+            </th>
+            <th></th>
+        </tr>
+        @{
+            var CustContactsList = Model.ToArray();
+        }
+        @for (int i = 0; i < CustContactsList.Length; i++)
+        {
+            @Html.HiddenFor(modelItem => CustContactsList[i].Id);
+            <tr>
+                <td>
+                    @Html.EditorFor(modelItem => CustContactsList[i].職稱)
+                    @Html.ValidationMessageFor(modelItem => CustContactsList[i].職稱, "", new { @class = "text-danger" })
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => CustContactsList[i].姓名)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => CustContactsList[i].Email)
+                </td>
+                <td>
+                    @Html.EditorFor(modelItem => CustContactsList[i].手機)
+                    @Html.ValidationMessageFor(modelItem => CustContactsList[i].手機, "", new { @class = "text-danger" })
+                </td>
+                <td>
+                    @Html.EditorFor(modelItem => CustContactsList[i].電話)
+                    @Html.ValidationMessageFor(modelItem => CustContactsList[i].電話, "", new { @class = "text-danger" })
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => CustContactsList[i].客戶資料.客戶名稱)
+                </td>
+            </tr>
+        }
+
+    </table>
+    <input type="submit" name="name" value="批次修改" />
+            }
