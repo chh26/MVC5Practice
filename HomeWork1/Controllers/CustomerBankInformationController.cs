@@ -18,7 +18,7 @@ namespace HomeWork1.Controllers
         // GET: CustomerBankInformation
         public ActionResult Index()
         {
-            var 客戶銀行資訊 = repo客戶銀行資訊.All().Include(客 => 客.客戶資料);
+            var 客戶銀行資訊 = repo客戶銀行資訊.All();
 
             return View(客戶銀行資訊.ToList());
         }
@@ -32,13 +32,22 @@ namespace HomeWork1.Controllers
                         || p.分行代碼.ToString().Contains(param)
                         || p.帳戶名稱.Contains(param)
                         || p.帳戶號碼.Contains(param)
+                        || p.客戶資料.客戶名稱.Contains(param)
                      ).AsQueryable();
+            TempData["param"] = param;
             return View(data);
         }
 
-        public ActionResult GetExcelFile()
+        public ActionResult GetExcelFile(string hidparam)
         {
-            var 客戶銀行資訊 = repo客戶銀行資訊.All();
+            var 客戶銀行資訊 = repo客戶銀行資訊.All().
+                Where(p => p.銀行名稱.Contains(hidparam)
+                        || p.銀行代碼.ToString().Contains(hidparam)
+                        || p.分行代碼.ToString().Contains(hidparam)
+                        || p.帳戶名稱.Contains(hidparam)
+                        || p.帳戶號碼.Contains(hidparam)
+                        || p.客戶資料.客戶名稱.Contains(hidparam)
+                     ).AsQueryable();
             MemoryStream ms = GetExportData(客戶銀行資訊);
             return File(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "客戶銀行資訊.xlsx");
         }

@@ -23,54 +23,102 @@ namespace HomeWork1.Controllers
             ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別");
             return View(客戶資料.ToList());
         }
-        //public ActionResult Index(int? id)
-        //{
-        //    ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別");
-
-        //    if (!id.HasValue)
-        //    {
-        //        var 客戶資料 = repo客戶資料.All();
-        //        return View(客戶資料.ToList());
-        //    }
-
-        //    var 客戶資料by類別 = repo客戶資料.All().Where(p =>p.客戶分類== id);
-        //    return View(客戶資料by類別.ToList());
-        //}
-
+        
         [HttpPost]
-        public ActionResult Index(string param)
+        public ActionResult Index(string param,string hidcustCategory)
         {
-            var data = repo客戶資料.All().
+            var data = repo客戶資料.All();
+
+            if (!string.IsNullOrEmpty(param))
+            {
+                data = data.
                 Where(p => p.客戶名稱.Contains(param)
                         || p.統一編號.Contains(param)
                         || p.電話.Contains(param)
                         || p.傳真.Contains(param)
                         || p.地址.Contains(param)
                         || p.Email.Contains(param)
-                        || p.客戶類別.類別.Contains(param)
                      );
-            ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別");
+            }
+
+            if (!string.IsNullOrEmpty(hidcustCategory))
+            {
+                int intCategory = Convert.ToInt32(hidcustCategory);
+                data = data.Where(p => p.客戶分類 == intCategory);
+                ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別", intCategory);
+            }
+            else
+            {
+                ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別");
+            }
+
+            TempData["param"] = param;
+            TempData["custCategory"] = hidcustCategory;
             return View(data);
         }
 
-        public ActionResult GetCustCategoryData(string param)
+        public ActionResult GetCustCategoryData(string hidparam, string custCategory)
         {
             var data = repo客戶資料.All();
 
-
-            if (!string.IsNullOrEmpty(param))
+            if (!string.IsNullOrEmpty(hidparam))
             {
-                int intParam = Convert.ToInt32(param);
-                data = data.Where(p => p.客戶分類 == intParam);
+                data = data.
+                Where(p => p.客戶名稱.Contains(hidparam)
+                        || p.統一編號.Contains(hidparam)
+                        || p.電話.Contains(hidparam)
+                        || p.傳真.Contains(hidparam)
+                        || p.地址.Contains(hidparam)
+                        || p.Email.Contains(hidparam)
+                     );
             }
-            
-            ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別");
+            if (!string.IsNullOrEmpty(custCategory))
+            {
+                int intParam = Convert.ToInt32(custCategory);
+                data = data.Where(p => p.客戶分類 == intParam);
+                ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別", intParam);
+            }
+            else
+            {
+                ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別");
+            }
+
+            TempData["param"] = hidparam;
+            TempData["custCategory"] = custCategory;
             return View("Index", data.ToList());
         }
 
-        public ActionResult GetExcelFile()
+        [HttpPost]
+        public ActionResult GetExcelFile(string hidparam, string hidcustCategory)
         {
             var 客戶資料 = repo客戶資料.All();
+
+            if (!string.IsNullOrEmpty(hidparam))
+            {
+                客戶資料 = 客戶資料.
+                Where(p => p.客戶名稱.Contains(hidparam)
+                        || p.統一編號.Contains(hidparam)
+                        || p.電話.Contains(hidparam)
+                        || p.傳真.Contains(hidparam)
+                        || p.地址.Contains(hidparam)
+                        || p.Email.Contains(hidparam)
+                     );
+            }
+
+            if (!string.IsNullOrEmpty(hidcustCategory))
+            {
+                int intCategory = Convert.ToInt32(hidcustCategory);
+                客戶資料 = 客戶資料.Where(p => p.客戶分類 == intCategory);
+                ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別", intCategory);
+                
+            }
+            else
+            {
+                ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別");
+            }
+
+            TempData["param"] = hidparam;
+            TempData["custCategory"] = hidcustCategory;
             MemoryStream ms = GetExportData(客戶資料);
             return File(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "客戶資訊.xlsx");
         }

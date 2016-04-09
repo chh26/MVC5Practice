@@ -16,7 +16,7 @@
                 </td>
                 <td style="width:67%"></td>
                 <td>
-                    <input type="text" name="param" class="form-control">
+                    <input type="text" name="param" class="form-control" value="@TempData["param"]">
                 </td>
                 <td>
                     <input type="submit" value="搜尋" class="btn btn-default" />
@@ -25,7 +25,8 @@
                     |
                 </td>
                 <td>
-                    @Html.ActionLink("匯出資訊", "GetExcelFile")
+                    <input type="submit" value="匯出資訊" class="btn btn-default" formaction="@Url.Action("GetExcelFile")" />
+                    @Html.Hidden("hidparam", TempData["param"])
                 </td>
             </tr>
         </table>

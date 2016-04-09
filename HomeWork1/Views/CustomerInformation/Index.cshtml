@@ -14,7 +14,7 @@
                 <td style="white-space:nowrap;">
                     @Html.ActionLink("Create New", "Create") 
                 </td>
-                <td style="width:49%"></td>
+                <td style="width:47%"></td>
                 <td style="white-space:nowrap">
                     客戶分類查詢:
                 </td>
@@ -22,25 +22,27 @@
                     @Html.DropDownList("custCategory", null, "全部", htmlAttributes: new { @class = "form-control" })
                 </td>
                 <td>
-                    |
+                    ｜
                 </td>
                 <td>
-                    <input type="text" name="param" class="form-control">
+                    <input type="text" name="param" id="keyword" class="form-control" value="@TempData["param"]"/>
                 </td>
                 <td>
-                    <input type="submit" value="搜尋" class="btn btn-default" />
+                    <input type="submit" value="搜尋" class="btn btn-default" formaction="@Url.Action("Index")"  />
                 </td>
                 <td>
-                    |
+                    ｜
                 </td>
                 <td>
-                    @Html.ActionLink("匯出資訊", "GetExcelFile")
+                    <input type="submit"  value="匯出資訊" class="btn btn-default" formaction="@Url.Action("GetExcelFile")"/>
+                    <button id="btnExport" hidden="hidden">匯出資訊</button>
+                    @Html.Hidden("hidparam", TempData["param"])
+                    @Html.Hidden("hidcustCategory", TempData["custCategory"])
                 </td>
-                
             </tr>
         </table>
     }
-    <button id="btnExport" hidden="hidden">匯出資訊</button>
+
 </p>
 <table class="table">
     <tr>
@@ -110,12 +112,15 @@
         });
 
         function getCustCategory() {
-            $.post('@Url.Action("GetCustCategoryData")', { param: $('#custCategory').val() });
+            var url = '@Url.Action("GetCustCategoryData")' + "?hidparam=" + $('#hidparam').val() + "&custCategory=" + $('#custCategory').val();
+            location.href = url;
         }
 
-        $('#btnExport').on("click", function () {
-            $.post('@Url.Action("GetExcelFile")');
-        })
+        @*$('#btnExport').on("click", function () {
+            alert($('#keyword').val());
+            var url = '@Url.Action("GetExcelFile")' + "?hidparam=" + $('#hidparam').val() + "&hidcustCategory=" + $('#hidcustCategory').val();
+            location.href = url;
+        })*@
 
     </script>
     }

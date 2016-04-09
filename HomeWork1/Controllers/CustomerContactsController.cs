@@ -18,7 +18,7 @@ namespace HomeWork1.Controllers
         // GET: CustomerContacts
         public ActionResult Index()
         {
-            var 客戶聯絡人 = repo客戶聯絡人.All().Include(客 => 客.客戶資料);
+            var 客戶聯絡人 = repo客戶聯絡人.All();
 
             return View(客戶聯絡人.ToList());
         }
@@ -32,7 +32,10 @@ namespace HomeWork1.Controllers
                         || p.Email.ToString().Contains(param)
                         || p.手機.Contains(param)
                         || p.電話.Contains(param)
+                        || p.客戶資料.客戶名稱.Contains(param)
                      ).AsQueryable();
+
+            TempData["param"] = param;
             return View(data);
         }
 
@@ -42,9 +45,16 @@ namespace HomeWork1.Controllers
             return PartialView("Index");
         }
 
-        public ActionResult GetExcelFile()
+        public ActionResult GetExcelFile(string hidparam)
         {
-            var 客戶聯絡人 = repo客戶聯絡人.All();
+            var 客戶聯絡人 = repo客戶聯絡人.All().
+                Where(p => p.職稱.Contains(hidparam)
+                        || p.姓名.ToString().Contains(hidparam)
+                        || p.Email.ToString().Contains(hidparam)
+                        || p.手機.Contains(hidparam)
+                        || p.電話.Contains(hidparam)
+                        || p.客戶資料.客戶名稱.Contains(hidparam)
+                     ).AsQueryable();
             MemoryStream ms = GetExportData(客戶聯絡人);
             return File(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "客戶聯絡人資訊.xlsx");
         }
