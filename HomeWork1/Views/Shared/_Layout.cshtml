@@ -25,10 +25,13 @@
                     <li>@Html.ActionLink("首頁", "Index", "Home")</li>
                     <li>@Html.ActionLink("關於", "About", "Home")</li>
                     <li>@Html.ActionLink("連絡方式", "Contact", "Home")</li>
-                    <li>@Html.ActionLink("客戶資訊列表", "Index", "CustomerInformation")</li>
-                    <li>@Html.ActionLink("客戶聯絡人列表", "Index", "CustomerContacts")</li>
-                    <li>@Html.ActionLink("客戶銀行帳戶列表", "Index", "CustomerBankInformation")</li>
-                    <li>@Html.ActionLink("客戶資訊統計列表", "Index", "CustomerInformStatistics")</li>
+                    @if (Context.User.IsInRole("admin"))
+                    {
+                        <li>@Html.ActionLink("客戶資訊列表", "Index", "CustomerInformation")</li>
+                        <li>@Html.ActionLink("客戶聯絡人列表", "Index", "CustomerContacts")</li>
+                        <li>@Html.ActionLink("客戶銀行帳戶列表", "Index", "CustomerBankInformation")</li>
+                        <li>@Html.ActionLink("客戶資訊統計列表", "Index", "CustomerInformStatistics")</li>
+                    }
                 </ul>
                 @Html.Partial("_LoginPartial")
             </div>

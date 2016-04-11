@@ -1,4 +1,6 @@
-﻿@model IEnumerable<HomeWork1.Models.客戶聯絡人>
+﻿@using PagedList.Mvc;
+@using PagedList;
+@model IPagedList<HomeWork1.Models.客戶聯絡人>
 
 @{
     ViewBag.Title = "Index";
@@ -14,19 +16,29 @@
                 <td style="white-space:nowrap;">
                     @Html.ActionLink("Create New", "Create")
                 </td>
-                <td style="width:67%"></td>
+                <td>｜</td>
+                <td style="white-space:nowrap">
+                    職稱:
+                </td>
+                <td>
+                    @Html.DropDownList("jobTitleList", null, "全部", htmlAttributes: new { @class = "form-control" })
+                </td>
+                <td>｜</td>
                 <td>
                     <input type="text" name="param" class="form-control" value="@TempData["param"]">
                 </td>
                 <td>
-                    <input type="submit" value="搜尋" class="btn btn-default" />
+                    <input type="submit" value="搜尋" class="btn btn-default" formaction="@Url.Action("Index")" />
                 </td>
-                <td>
-                    |
-                </td>
+                <td>｜</td>
                 <td>
                     <input type="submit" value="匯出資訊" class="btn btn-default" formaction="@Url.Action("GetExcelFile")" />
                     @Html.Hidden("hidparam", TempData["param"])
+                    @Html.Hidden("hidjobtitle", TempData["jobtitle"])
+                </td>
+                <td>｜</td>
+                <td>
+                    @Html.ActionLink("SearchError", "GetJobList")
                 </td>
             </tr>
         </table>
@@ -35,22 +47,52 @@
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.職稱)
+            @*@Html.DisplayNameFor(model => model.職稱)*@
+            @Html.ActionLink("職稱", "Sort", new { columnName = "職稱", sort = TempData["nextSort"], sortColumn = TempData["sortColumn"], keyword = TempData["param"], jobtitle = TempData["jobtitle"], page = TempData["currentPage"] })
+            @if (TempData["sortColumn"] != null && TempData["sortColumn"].ToString() == "職稱")
+            {
+                @ViewBag.sortTag
+            }
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.姓名)
+            @*@Html.DisplayNameFor(model => model.姓名)*@
+            @Html.ActionLink("姓名", "Sort", new { columnName = "姓名", sort = TempData["nextSort"], sortColumn = TempData["sortColumn"], keyword = TempData["param"], jobtitle = TempData["jobtitle"], page = TempData["currentPage"] })
+            @if (TempData["sortColumn"] != null && TempData["sortColumn"].ToString() == "姓名")
+            {
+                @ViewBag.sortTag
+            }
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Email)
+            @*@Html.DisplayNameFor(model => model.Email)*@
+            @Html.ActionLink("Email", "Sort", new { columnName = "Email", sort = TempData["nextSort"], sortColumn = TempData["sortColumn"], keyword = TempData["param"], jobtitle = TempData["jobtitle"], page = TempData["currentPage"] })
+            @if (TempData["sortColumn"] != null && TempData["sortColumn"].ToString() == "Email")
+            {
+                @ViewBag.sortTag
+            }
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.手機)
+            @*@Html.DisplayNameFor(model => model.手機)*@
+            @Html.ActionLink("手機", "Sort", new { columnName = "手機", sort = TempData["nextSort"], sortColumn = TempData["sortColumn"], keyword = TempData["param"], jobtitle = TempData["jobtitle"], page = TempData["currentPage"] })
+            @if (TempData["sortColumn"] != null && TempData["sortColumn"].ToString() == "手機")
+            {
+                @ViewBag.sortTag
+            }
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.電話)
+            @*@Html.DisplayNameFor(model => model.電話)*@
+            @Html.ActionLink("電話", "Sort", new { columnName = "電話", sort = TempData["nextSort"], sortColumn = TempData["sortColumn"], keyword = TempData["param"], jobtitle = TempData["jobtitle"], page = TempData["currentPage"] })
+            @if (TempData["sortColumn"] != null && TempData["sortColumn"].ToString() == "電話")
+            {
+                @ViewBag.sortTag
+            }
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.客戶資料.客戶名稱)
+            @*@Html.DisplayNameFor(model => model.客戶資料.客戶名稱)*@
+            @Html.ActionLink("客戶名稱", "Sort", new { columnName = "客戶名稱", sort = TempData["nextSort"], sortColumn = TempData["sortColumn"], keyword = TempData["param"], jobtitle = TempData["jobtitle"], page = TempData["currentPage"] })
+            @if (TempData["sortColumn"] != null && TempData["sortColumn"].ToString() == "客戶名稱")
+            {
+                @ViewBag.sortTag
+            }
         </th>
         <th></th>
     </tr>
@@ -82,5 +124,17 @@
         </td>
     </tr>
 }
-
 </table>
+@Html.PagedListPager(Model, page => Url.Action("PageList", new { sort = TempData["pageSort"], sortColumn = TempData["sortColumn"], keyword = TempData["param"], jobtitle = TempData["jobtitle"], page }))
+@section Scripts{
+    <script>
+        $('#jobTitleList').change(function () {
+            GetJobList();
+        })
+
+        function GetJobList() {
+            var url = '@Url.Action("GetJobList")' + "?hidparam=" + encodeURIComponent($('#hidparam').val()) + "&jobtitle=" + encodeURIComponent($('#jobTitleList').val());
+            location.href = url;
+        }
+    </script>
+}

@@ -7,6 +7,7 @@ using System.Web.Mvc;
 
 namespace HomeWork1.Controllers
 {
+    [計算Action執行時間Attribute]
     public class BaseController : Controller
     {
 

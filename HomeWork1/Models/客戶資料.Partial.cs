@@ -36,6 +36,11 @@ namespace HomeWork1.Models
         [EmailAddress]
         public string Email { get; set; }
 
+        [Required]
+        [StringLength(250, ErrorMessage = "欄位長度不得大於 250 個字元")]
+        public string 帳號 { get; set; }
+        public string 密碼 { get; set; }
+
         public int 客戶分類 { get; set; }
 
         public virtual ICollection<客戶銀行資訊> 客戶銀行資訊 { get; set; }

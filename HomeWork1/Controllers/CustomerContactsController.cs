@@ -10,33 +10,59 @@ using HomeWork1.Models;
 using System.IO;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
+using System.Linq.Expressions;
+using PagedList;
 
 namespace HomeWork1.Controllers
 {
     public class CustomerContactsController : BaseController
     {
+        private int pageSize = 1;
         // GET: CustomerContacts
-        public ActionResult Index()
+        public ActionResult Index(int page = 1)
         {
+            int currentPage = page > 1 ? page : 1;
             var 客戶聯絡人 = repo客戶聯絡人.All();
 
-            return View(客戶聯絡人.ToList());
+            ViewBag.jobTitleList = new SelectList(repo客戶聯絡人.All().Select(p => p.職稱).Distinct());
+            return View(客戶聯絡人.ToList().ToPagedList(currentPage, pageSize));
         }
 
         [HttpPost]
-        public ActionResult Index(string param)
+        public ActionResult Index(string param, string hidjobtitle, int page = 1)
         {
-            var data = repo客戶聯絡人.All().
-                Where(p => p.職稱.Contains(param)
-                        || p.姓名.ToString().Contains(param)
-                        || p.Email.ToString().Contains(param)
-                        || p.手機.Contains(param)
-                        || p.電話.Contains(param)
-                        || p.客戶資料.客戶名稱.Contains(param)
-                     ).AsQueryable();
+            int currentPage = page > 1 ? page : 1;
+            var data = repo客戶聯絡人.Search(param, hidjobtitle);
+
+            if (!string.IsNullOrEmpty(hidjobtitle))
+                ViewBag.jobTitleList = new SelectList(repo客戶聯絡人.All().Select(p => p.職稱).Distinct(), hidjobtitle);
+            else
+                ViewBag.jobTitleList = new SelectList(repo客戶聯絡人.All().Select(p => p.職稱).Distinct());
 
             TempData["param"] = param;
-            return View(data);
+            TempData["jobtitle"] = hidjobtitle;
+
+            return View(data.ToList().ToPagedList(currentPage, pageSize));
+        }
+
+        [HandleError(ExceptionType = typeof(ArgumentException), View = "SearchError")]
+        public ActionResult GetJobList(string hidparam, string jobtitle, int page = 1)
+        {
+            int currentPage = page > 1 ? page : 1;
+            if (hidparam == null && jobtitle == null)
+            {
+                throw new ArgumentException("參數錯誤");
+            }
+            var data = repo客戶聯絡人.Search(hidparam, jobtitle);
+
+            if (!string.IsNullOrEmpty(jobtitle))
+                ViewBag.jobTitleList = new SelectList(repo客戶聯絡人.All().Select(p => p.職稱).Distinct(), jobtitle);
+            else
+                ViewBag.jobTitleList = new SelectList(repo客戶聯絡人.All().Select(p => p.職稱).Distinct());
+
+            TempData["param"] = hidparam;
+            TempData["jobtitle"] = jobtitle;
+            return View("Index", data.ToList().ToPagedList(currentPage, pageSize));
         }
 
         public ActionResult PartialViewTest()
@@ -45,16 +71,14 @@ namespace HomeWork1.Controllers
             return PartialView("Index");
         }
 
-        public ActionResult GetExcelFile(string hidparam)
+        [HttpPost]
+        public ActionResult GetExcelFile(string hidparam, string hidjobtitle)
         {
-            var 客戶聯絡人 = repo客戶聯絡人.All().
-                Where(p => p.職稱.Contains(hidparam)
-                        || p.姓名.ToString().Contains(hidparam)
-                        || p.Email.ToString().Contains(hidparam)
-                        || p.手機.Contains(hidparam)
-                        || p.電話.Contains(hidparam)
-                        || p.客戶資料.客戶名稱.Contains(hidparam)
-                     ).AsQueryable();
+            var 客戶聯絡人 = repo客戶聯絡人.Search(hidparam, hidjobtitle);
+
+            TempData["param"] = hidparam;
+            TempData["jobtitle"] = hidjobtitle;
+
             MemoryStream ms = GetExportData(客戶聯絡人);
             return File(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "客戶聯絡人資訊.xlsx");
         }
@@ -92,6 +116,140 @@ namespace HomeWork1.Controllers
             workbook.Write(ms);
             workbook = null;
             return ms;
+        }
+
+        public ActionResult Sort(string columnName, string sort, string sortColumn, string keyword, string jobtitle, int page = 1)
+        {
+            int currentPage = page > 1 ? page : 1;
+            var data = repo客戶聯絡人.Search(keyword, jobtitle);
+
+            if (columnName == "客戶名稱")
+            {
+                if (columnName == sortColumn)
+                {
+                    if (sort == "Desc")
+                    {
+                        data = data.OrderByDescending(p => p.客戶資料.客戶名稱);
+                        ViewBag.sortTag = "▼";
+                        TempData["nextSort"] = "Asc";
+                        TempData["pageSort"] = "Desc";
+                    }
+                    else
+                    {
+                        data = data.OrderBy(p => p.客戶資料.客戶名稱);
+                        ViewBag.sortTag = "▲";
+                        TempData["nextSort"] = "Desc";
+                        TempData["pageSort"] = "Asc";
+                    }
+                }
+                else
+                {
+                    data = data.OrderBy(p => p.客戶資料.客戶名稱);
+                    ViewBag.sortTag = "▲";
+                    TempData["nextSort"] = "Desc";
+                    TempData["pageSort"] = "Asc";
+                }
+            }
+            else
+            {
+                var param = Expression.Parameter(typeof(客戶聯絡人), "custContacts");
+                var orderExpression = Expression.Lambda<Func<客戶聯絡人, object>>(Expression.Property(param, columnName), param);
+                if (columnName == sortColumn)
+                {
+                    if (sort == "Desc")
+                    {
+                        data = data.OrderByDescending(orderExpression);
+                        ViewBag.sortTag = "▼";
+                        TempData["nextSort"] = "Asc";
+                        TempData["pageSort"] = "Desc";
+                    }
+                    else
+                    {
+                        data = data.OrderBy(orderExpression);
+                        ViewBag.sortTag = "▲";
+                        TempData["nextSort"] = "Desc";
+                        TempData["pageSort"] = "Asc";
+                    }
+                }
+                else
+                {
+                    data = data.OrderBy(orderExpression);
+                    ViewBag.sortTag = "▲";
+                    TempData["nextSort"] = "Desc";
+                    TempData["pageSort"] = "Asc";
+                }
+            }
+
+
+            if (!string.IsNullOrEmpty(jobtitle))
+                ViewBag.jobTitleList = new SelectList(repo客戶聯絡人.All().Select(p => p.職稱).Distinct(), jobtitle);
+            else
+                ViewBag.jobTitleList = new SelectList(repo客戶聯絡人.All().Select(p => p.職稱).Distinct());
+
+            TempData["sortColumn"] = columnName;
+            TempData["param"] = keyword;
+            TempData["jobtitle"] = jobtitle;
+            TempData["currentPage"] = currentPage;
+
+            return View("Index", data.ToList().ToPagedList(currentPage, pageSize));
+        }
+
+        public ActionResult PageList(string sort, string sortColumn, string keyword, string jobtitle, int page = 1)
+        {
+            int currentPage = page > 1 ? page : 1;
+            var data = repo客戶聯絡人.Search(keyword, jobtitle);
+
+            if (!string.IsNullOrEmpty(sortColumn))
+            {
+                if (sortColumn == "客戶分類")
+                {
+                    if (sort == "Desc")
+                    {
+                        data = data.OrderByDescending(p => p.客戶資料.客戶名稱);
+                        ViewBag.sortTag = "▼";
+                        TempData["nextSort"] = "Asc";
+                        TempData["pageSort"] = "Desc";
+                    }
+                    else
+                    {
+                        data = data.OrderBy(p => p.客戶資料.客戶名稱);
+                        ViewBag.sortTag = "▲";
+                        TempData["nextSort"] = "Desc";
+                        TempData["pageSort"] = "Asc";
+                    }
+                }
+                else
+                {
+                    var param = Expression.Parameter(typeof(客戶聯絡人), "custContacts");
+                    var orderExpression = Expression.Lambda<Func<客戶聯絡人, object>>(Expression.Property(param, sortColumn), param);
+                    if (sort == "Desc")
+                    {
+                        data = data.OrderByDescending(orderExpression);
+                        ViewBag.sortTag = "▼";
+                        TempData["nextSort"] = "Asc";
+                        TempData["pageSort"] = "Desc";
+                    }
+                    else
+                    {
+                        data = data.OrderBy(orderExpression);
+                        ViewBag.sortTag = "▲";
+                        TempData["nextSort"] = "Desc";
+                        TempData["pageSort"] = "Asc";
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(jobtitle))
+                ViewBag.jobTitleList = new SelectList(repo客戶聯絡人.All().Select(p => p.職稱).Distinct(), jobtitle);
+            else
+                ViewBag.jobTitleList = new SelectList(repo客戶聯絡人.All().Select(p => p.職稱).Distinct());
+
+            TempData["sortColumn"] = sortColumn;
+            TempData["param"] = keyword;
+            TempData["jobtitle"] = jobtitle;
+            TempData["currentPage"] = currentPage;
+
+            return View("Index", data.ToList().ToPagedList(currentPage, pageSize));
         }
 
         // GET: CustomerContacts/Details/5

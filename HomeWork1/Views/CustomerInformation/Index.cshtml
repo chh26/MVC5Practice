@@ -1,4 +1,6 @@
-﻿@model IEnumerable<HomeWork1.Models.客戶資料>
+﻿@using PagedList.Mvc;
+@using PagedList;
+@model IPagedList<HomeWork1.Models.客戶資料>
 
 @{
     ViewBag.Title = "Index";
@@ -11,29 +13,25 @@
     {
         <table>
             <tr>
-                <td style="white-space:nowrap;">
+                <td style="white-space:nowrap;"　style="width:15%">
                     @Html.ActionLink("Create New", "Create") 
                 </td>
-                <td style="width:47%"></td>
+                <td >｜</td>
                 <td style="white-space:nowrap">
-                    客戶分類查詢:
+                    客戶分類:
                 </td>
                 <td>
                     @Html.DropDownList("custCategory", null, "全部", htmlAttributes: new { @class = "form-control" })
                 </td>
-                <td>
-                    ｜
-                </td>
-                <td>
+                <td>｜</td>
+                <td >
                     <input type="text" name="param" id="keyword" class="form-control" value="@TempData["param"]"/>
                 </td>
-                <td>
+                <td >
                     <input type="submit" value="搜尋" class="btn btn-default" formaction="@Url.Action("Index")"  />
                 </td>
-                <td>
-                    ｜
-                </td>
-                <td>
+                <td>｜</td>
+                <td >
                     <input type="submit"  value="匯出資訊" class="btn btn-default" formaction="@Url.Action("GetExcelFile")"/>
                     <button id="btnExport" hidden="hidden">匯出資訊</button>
                     @Html.Hidden("hidparam", TempData["param"])
@@ -47,25 +45,60 @@
 <table class="table">
     <tr>
         <th>
-            @Html.DisplayNameFor(model => model.客戶名稱)
+            @*@Html.DisplayNameFor(model => model.客戶名稱)*@
+            @Html.ActionLink("客戶名稱", "Sort", new { columnName = "客戶名稱", sort = TempData["nextSort"] , sortColumn = TempData["sortColumn"] , keyword = TempData["param"] , CategoryId = TempData["custCategory"], page = TempData["currentPage"] })
+            @if (TempData["sortColumn"] != null && TempData["sortColumn"].ToString() == "客戶名稱")
+            {
+                @ViewBag.sortTag
+            }
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.統一編號)
+            @*@Html.DisplayNameFor(model => model.統一編號)*@
+            @Html.ActionLink("統一編號", "Sort", new { columnName = "統一編號", sort = TempData["nextSort"], sortColumn = TempData["sortColumn"], keyword = TempData["param"], CategoryId = TempData["custCategory"], page = TempData["currentPage"] })
+            @if (TempData["sortColumn"] != null && TempData["sortColumn"].ToString() == "統一編號")
+            {
+                @ViewBag.sortTag
+            }
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.電話)
+            @*@Html.DisplayNameFor(model => model.電話)*@
+            @Html.ActionLink("電話", "Sort", new { columnName = "電話", sort = TempData["nextSort"], sortColumn = TempData["sortColumn"], keyword = TempData["param"], CategoryId = TempData["custCategory"], page = TempData["currentPage"] })
+            @if (TempData["sortColumn"] != null && TempData["sortColumn"].ToString() == "電話")
+            {
+                @ViewBag.sortTag
+            }
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.傳真)
+            @*@Html.DisplayNameFor(model => model.傳真)*@
+            @Html.ActionLink("傳真", "Sort", new { columnName = "傳真", sort = TempData["nextSort"], sortColumn = TempData["sortColumn"], keyword = TempData["param"], CategoryId = TempData["custCategory"], page = TempData["currentPage"] })
+            @if (TempData["sortColumn"] != null && TempData["sortColumn"].ToString() == "傳真")
+            {
+                @ViewBag.sortTag
+            }
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.地址)
+            @*@Html.DisplayNameFor(model => model.地址)*@
+            @Html.ActionLink("地址", "Sort", new { columnName = "地址", sort = TempData["nextSort"], sortColumn = TempData["sortColumn"], keyword = TempData["param"], CategoryId = TempData["custCategory"], page = TempData["currentPage"] })
+            @if (TempData["sortColumn"] != null && TempData["sortColumn"].ToString() == "地址")
+            {
+                @ViewBag.sortTag
+            } 
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.Email)
+            @*@Html.DisplayNameFor(model => model.Email)*@
+            @Html.ActionLink("Email", "Sort", new { columnName = "Email", sort = TempData["nextSort"], sortColumn = TempData["sortColumn"], keyword = TempData["param"], CategoryId = TempData["custCategory"], page = TempData["currentPage"] })
+            @if (TempData["sortColumn"] != null && TempData["sortColumn"].ToString() == "Email")
+            {
+                @ViewBag.sortTag
+            }
         </th>
         <th>
-            @Html.DisplayNameFor(model => model.客戶分類)
+            @*@Html.DisplayNameFor(model => model.客戶分類)*@
+            @Html.ActionLink("客戶分類", "Sort", new { columnName = "客戶分類", sort = TempData["nextSort"], sortColumn = TempData["sortColumn"], keyword = TempData["param"], CategoryId = TempData["custCategory"], page = TempData["currentPage"] })
+            @if (TempData["sortColumn"] != null && TempData["sortColumn"].ToString() == "客戶分類")
+            {
+                @ViewBag.sortTag
+            }
         </th>
         <th></th>
     </tr>
@@ -102,19 +135,18 @@
     </tr>
     }
 </table>
+@Html.PagedListPager(Model, page => Url.Action("PageList", new { sort = TempData["pageSort"], sortColumn = TempData["sortColumn"], keyword = TempData["param"], CategoryId = TempData["custCategory"], page }))
 
 @section Scripts{
     <script>
-        $(document).ready(function () {
-            $('#custCategory').change(function () {
-                getCustCategory();
-            })
-        });
+        $('#custCategory').change(function () {
+                    getCustCategory();
+                })
 
         function getCustCategory() {
-            var url = '@Url.Action("GetCustCategoryData")' + "?hidparam=" + $('#hidparam').val() + "&custCategory=" + $('#custCategory').val();
-            location.href = url;
-        }
+            var url = '@Url.Action("GetCustCategoryData")' + "?hidparam=" + encodeURIComponent($('#hidparam').val()) + "&custCategory=" + encodeURIComponent($('#custCategory').val());
+                    location.href = url;
+                }
 
         @*$('#btnExport').on("click", function () {
             alert($('#keyword').val());

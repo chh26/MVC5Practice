@@ -30,6 +30,8 @@ namespace HomeWork1.Models
         public string Email { get; set; }
         public bool 是否已刪除 { get; set; }
         public int 客戶分類 { get; set; }
+        public string 帳號 { get; set; }
+        public string 密碼 { get; set; }
     
         public virtual 客戶類別 客戶類別 { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

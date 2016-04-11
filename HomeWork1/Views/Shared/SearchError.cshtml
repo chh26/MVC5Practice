@@ -1,0 +1,11 @@
+﻿@model System.Web.Mvc.HandleErrorInfo
+
+@{
+    ViewBag.Title = "SearchError";
+}
+
+<h1 class="text-danger">查詢時發生錯誤。</h1>
+
+<pre>@Model.Exception.Message</pre>
+
+<pre>@Model.Exception.StackTrace</pre>

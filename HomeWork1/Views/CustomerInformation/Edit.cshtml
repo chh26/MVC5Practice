@@ -5,7 +5,12 @@
 }
 
 <h2>Edit</h2>
-
+@if (@TempData["msg"] != null)
+{
+    <script>
+        alert('@TempData["msg"]');
+    </script>
+}
 
 @using (Html.BeginForm())
 {
@@ -20,16 +25,54 @@
         <div class="form-group">
             @Html.LabelFor(model => model.客戶名稱, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.客戶名稱, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.客戶名稱, "", new { @class = "text-danger" })
+                @if (Context.User.IsInRole("admin"))
+                {
+                   @Html.EditorFor(model => model.客戶名稱, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.客戶名稱, "", new { @class = "text-danger" })
+                }
+                else
+                {
+                    @Html.DisplayFor(model => model.客戶名稱)
+                }
             </div>
         </div>
 
         <div class="form-group">
             @Html.LabelFor(model => model.統一編號, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.統一編號, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.統一編號, "", new { @class = "text-danger" })
+                @if (Context.User.IsInRole("admin"))
+                {
+                    @Html.EditorFor(model => model.統一編號, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.統一編號, "", new { @class = "text-danger" })
+                }
+                else
+                {
+                    @Html.DisplayFor(model => model.統一編號)
+                }
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.帳號, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @if (Context.User.IsInRole("admin"))
+                {
+                    @Html.EditorFor(model => model.帳號, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.帳號, "", new { @class = "text-danger" })
+                }
+                else
+                {
+                    @Html.DisplayFor(model => model.帳號)
+                }
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.密碼, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @*@Html.EditorFor(model => model.密碼, new { htmlAttributes = new { @class = "form-control" } })*@
+                @Html.TextBox("PWD", null, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.Hidden("hidpwd", Model.密碼)
+                @Html.ValidationMessageFor(model => model.密碼, "", new { @class = "text-danger" })
             </div>
         </div>
 
@@ -68,8 +111,16 @@
         <div class="form-group">
             @Html.LabelFor(model => model.客戶分類, "客戶分類", htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.DropDownList("客戶分類", null, htmlAttributes: new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.客戶分類, "", new { @class = "text-danger" })
+                @if (Context.User.IsInRole("admin"))
+                {
+                    @Html.DropDownList("客戶分類", null, htmlAttributes: new { @class = "form-control" })
+                    @Html.ValidationMessageFor(model => model.客戶分類, "", new { @class = "text-danger" })
+                }
+                else
+                {
+                    @Html.DisplayFor(model => model.客戶分類)
+                }
+                
             </div>
         </div>
 
@@ -80,10 +131,12 @@
         </div>
     </div>
 }
-
+@if (Context.User.IsInRole("admin"))
+{
 <div>
     @Html.ActionLink("Back to List", "Index")
 </div>
+}
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
