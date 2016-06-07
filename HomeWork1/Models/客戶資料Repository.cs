@@ -17,7 +17,7 @@ namespace HomeWork1.Models
             return this.All().FirstOrDefault(p => p.Id == id);
         }
 
-        public IQueryable<客戶資料> Search(string searchTxt, string categoryId)
+        public IQueryable<客戶資料> Search(string searchTxt, int? categoryId)
         {
             var data = this.All();
 
@@ -33,7 +33,7 @@ namespace HomeWork1.Models
                      );
             }
 
-            if (!string.IsNullOrEmpty(categoryId))
+            if (categoryId.HasValue)
             {
                 int intCategory = Convert.ToInt32(categoryId);
                 data = data.Where(p => p.客戶分類 == intCategory);

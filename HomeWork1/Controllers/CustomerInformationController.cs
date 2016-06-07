@@ -21,78 +21,94 @@ namespace HomeWork1.Controllers
     {
         private int pageSize = 1;
         // GET: CustomerInformation
-        public ActionResult Index(int page = 1)
+        public ActionResult Index(string param, int? custCategory, string sortColumn, string sort, int page = 1)
         {
-            int currentPage = page > 1 ? page : 1;
-            var 客戶資料 = repo客戶資料.All();
-            ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別");
-            return View(客戶資料.ToList().ToPagedList(currentPage, pageSize));
-        }
-        
-        [HttpPost]
-        public ActionResult Index(string param,string hidcustCategory, int page = 1)
-        {
-            int currentPage = page > 1 ? page : 1;
-            var data = repo客戶資料.Search(param, hidcustCategory);
+            var data = repo客戶資料.Search(param, custCategory);
 
-            if (!string.IsNullOrEmpty(hidcustCategory))
+            if (custCategory.HasValue)
             {
-                int intCategory = Convert.ToInt32(hidcustCategory);
-                ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別", intCategory);
+                ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別", custCategory.Value);
             }
             else
             {
                 ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別");
             }
 
-            TempData["param"] = param;
-            TempData["custCategory"] = hidcustCategory;
-            return View(data.ToList().ToPagedList(currentPage, pageSize));
+            if (!string.IsNullOrEmpty(sortColumn))
+            {
+                ViewBag.sort = sort;
+                var paramer = Expression.Parameter(typeof(客戶資料), "customerinfo");
+                var orderExpression = Expression.Lambda<Func<客戶資料, object>>(Expression.Property(paramer, sortColumn), paramer);
+
+                if (sort == "desc")
+                {
+                    data = data.OrderByDescending(orderExpression);
+                    ViewBag.sortTag = "▼";
+                }
+                else
+                {
+                    data = data.OrderBy(orderExpression);
+                    ViewBag.sortTag = "▲";
+                }
+            }
+            
+
+            return View(data.ToList().ToPagedList(page, pageSize));
         }
 
-        [HandleError(ExceptionType = typeof(ArgumentException), View = "SearchError")]
-        public ActionResult GetCustCategoryData(string hidparam, string custCategory, int page = 1)
+        #region MARK
+        //[HttpPost]
+        //public ActionResult Index2(string param,string custCategory, int page = 1)
+        //{
+        //    int currentPage = page > 1 ? page : 1;
+        //    var data = repo客戶資料.Search(param, custCategory);
+
+        //    if (!string.IsNullOrEmpty(custCategory))
+        //    {
+        //        int intCategory = Convert.ToInt32(custCategory);
+        //        ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別", intCategory);
+        //    }
+        //    else
+        //    {
+        //        ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別");
+        //    }
+
+        //    //TempData["param"] = param;
+        //    //TempData["custCategory"] = hidcustCategory;
+        //    return View(data.ToList().ToPagedList(currentPage, pageSize));
+        //}
+
+        //[HandleError(ExceptionType = typeof(ArgumentException), View = "SearchError")]
+        //public ActionResult GetCustCategoryData(string hidparam, string custCategory, int page = 1)
+        //{
+        //    int currentPage = page > 1 ? page : 1;
+        //    if (hidparam == null && custCategory == null)
+        //    {
+        //        throw new ArgumentException("參數錯誤");
+        //    }
+
+        //    var data = repo客戶資料.Search(hidparam, custCategory);
+
+        //    if (!string.IsNullOrEmpty(custCategory))
+        //    {
+        //        int intParam = Convert.ToInt32(custCategory);
+        //        ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別", intParam);
+        //    }
+        //    else
+        //    {
+        //        ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別");
+        //    }
+
+        //    TempData["param"] = hidparam;
+        //    TempData["custCategory"] = custCategory;
+        //    return View("Index", data.ToList().ToPagedList(currentPage, pageSize));
+        //}
+        #endregion
+
+        public ActionResult GetExcelFile(string param, int? custCategory)
         {
-            int currentPage = page > 1 ? page : 1;
-            if (hidparam == null && custCategory == null)
-            {
-                throw new ArgumentException("參數錯誤");
-            }
+            var 客戶資料 = repo客戶資料.Search(param, custCategory);
 
-            var data = repo客戶資料.Search(hidparam, custCategory);
-
-            if (!string.IsNullOrEmpty(custCategory))
-            {
-                int intParam = Convert.ToInt32(custCategory);
-                ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別", intParam);
-            }
-            else
-            {
-                ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別");
-            }
-
-            TempData["param"] = hidparam;
-            TempData["custCategory"] = custCategory;
-            return View("Index", data.ToList().ToPagedList(currentPage, pageSize));
-        }
-
-        [HttpPost]
-        public ActionResult GetExcelFile(string hidparam, string hidcustCategory)
-        {
-            var 客戶資料 = repo客戶資料.Search(hidparam, hidcustCategory);
-
-            if (!string.IsNullOrEmpty(hidcustCategory))
-            {
-                int intCategory = Convert.ToInt32(hidcustCategory);
-                ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別", intCategory);
-            }
-            else
-            {
-                ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別");
-            }
-
-            TempData["param"] = hidparam;
-            TempData["custCategory"] = hidcustCategory;
             MemoryStream ms = GetExportData(客戶資料);
             return File(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "客戶資訊.xlsx");
         }
@@ -102,7 +118,6 @@ namespace HomeWork1.Controllers
             IWorkbook workbook = new XSSFWorkbook();
             MemoryStream ms = new MemoryStream();
             XSSFSheet sheet = (XSSFSheet)workbook.CreateSheet("客戶資料");
-
 
             //設定表頭
             IRow rowHeader = sheet.CreateRow(0);
@@ -134,7 +149,7 @@ namespace HomeWork1.Controllers
             return ms;
         }
 
-        public ActionResult Sort(string columnName, string sort, string sortColumn, string keyword, string CategoryId, int page = 1)
+        public ActionResult Sort(string columnName, string sort, string sortColumn, string keyword, int? CategoryId, int page = 1)
         {
             int currentPage = page > 1 ? page : 1;
             var data = repo客戶資料.Search(keyword, CategoryId);
@@ -197,7 +212,7 @@ namespace HomeWork1.Controllers
             }
 
            
-            if (!string.IsNullOrEmpty(CategoryId))
+            if (CategoryId.HasValue)
             {
                 int intCategory = Convert.ToInt32(CategoryId);
                 ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別", intCategory);
@@ -213,7 +228,7 @@ namespace HomeWork1.Controllers
             return View("Index", data.ToList().ToPagedList(currentPage, pageSize));
         }
 
-        public ActionResult PageList(string sort, string sortColumn, string keyword, string CategoryId, int page = 1)
+        public ActionResult PageList(string sort, string sortColumn, string keyword, int? CategoryId, int page = 1)
         {
             int currentPage = page > 1 ? page : 1;
             var data = repo客戶資料.Search(keyword, CategoryId);
@@ -258,7 +273,7 @@ namespace HomeWork1.Controllers
                 }
             }
 
-            if (!string.IsNullOrEmpty(CategoryId))
+            if (CategoryId.HasValue)
             {
                 int intCategory = Convert.ToInt32(CategoryId);
                 ViewBag.custCategory = new SelectList(repo客戶類別.All(), "Id", "類別", intCategory);
@@ -365,6 +380,9 @@ namespace HomeWork1.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, FormCollection form)
         {
+            //TODO 這邊可以用view model的方式，防止傳入的id被竄改
+
+
             var 客戶資料 = repo客戶資料.Find(id);
             if (TryUpdateModel(客戶資料, new string[] {
                 "密碼","電話","傳真","地址","Email"}))

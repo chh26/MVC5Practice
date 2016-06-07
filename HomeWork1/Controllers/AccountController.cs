@@ -23,7 +23,6 @@ namespace HomeWork1.Controllers
         [AllowAnonymous]
         public ActionResult Login(客戶資料 data)
         {
-
             // 登入時清空所有 Session 資料
             Session.RemoveAll();
 
